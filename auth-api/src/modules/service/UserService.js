@@ -2,6 +2,7 @@ import UserRepository from "../repository/UserRepository.js"
 import * as HttpStatus from "../../config/constants/HttpStatus.js"
 
 import UserException from "../user/UserException/UserException.js";
+import User from "../user/model/User.js";
 
 class UserService {
 
@@ -10,17 +11,15 @@ class UserService {
             const { email } = request.params;
             this.validateEmail(email);
 
-            let user = UserRepository.findByEmail(email);
+            let user = await UserRepository.findByEmail(email);
             
-            if (!user) {
-                throw new UserException(HttpStatus.BAD_REQUEST, "User not found.");
-            }
+            this.validateUser(user);
 
             return {
                 status: HttpStatus.SUCCESS,
                 user: {
                     id: user.id,
-                    nome: user.nome,
+                    name: user.name,
                     email: user.email
                 }
             }
@@ -36,9 +35,15 @@ class UserService {
 
     validateEmail(email) {
         if (!email) {
-            throw new Error("User email was not informed.");
+            throw new UserException(HttpStatus.BAD_REQUEST, "User email was not informed.");
         }
     
+    }
+
+    validateUser(user) {
+        if (!user) {
+            throw new UserException(HttpStatus.BAD_REQUEST, "User not found.");
+        }
     }
 
 }

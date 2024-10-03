@@ -12,7 +12,7 @@ export async function createInitialData() {
 
         let firstUser = await User.create({
             name: "User Test",
-            email: "teste.user@gmail.com",
+            email: "testeuser@gmail.com",
             password: password
         });
 
