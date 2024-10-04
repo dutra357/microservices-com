@@ -1,26 +1,26 @@
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
+
 import AuthException from "./AuthException.js";
 
 import * as secrets from "../constants/Secret.js";
 import * as HttpStatus from "../constants/HttpStatus.js";
 
 
-
-const bearer = "bearer ";
-
+const emptySpace = " ";
 
 export default async (request, response, next) => {
     try {
-        const { authorization } = request.headers;
-        let accessToken = authorization;
+        let { authorization } = request.headers;
 
         if (!authorization) {
             throw new AuthException(HttpStatus.UNAUTHORIZED, "Access token was not informed.");
         }
 
-        if (accessToken.toLowerCase().includes(bearer)) {
-            accessToken = accessToken.replace(bearer, "");
+        let accessToken = authorization;
+
+        if (accessToken.includes(emptySpace)) {
+            accessToken = accessToken.split(emptySpace)[1];
         }
 
         const decoded = await promisify(jwt.verify)(accessToken, secrets.API_SECRET);
@@ -30,9 +30,7 @@ export default async (request, response, next) => {
         return next();
 
     } catch (error) {
-        return {
-            status: error.status ? error.status : HttpStatus.INTERNAL_SERVER_ERROR,
-            message: error.message
-        };
-    }
+        const statusCode = error.status ? error.status : HttpStatus.INTERNAL_SERVER_ERROR;
+        return response.status(statusCode).json({ statusCode, message: error.message });
+    };
 }

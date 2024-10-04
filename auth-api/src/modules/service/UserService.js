@@ -53,10 +53,13 @@ class UserService {
     async findByEmail(request) {
         try {
             const { email } = request.params;
+            const { authUser } = request
+
             this.validateEmail(email);
 
             let user = await UserRepository.findByEmail(email);
-            
+
+            this.validateAuthenticatedUser(user, authUser);
             this.validateUser(user);
 
             return {
@@ -73,6 +76,13 @@ class UserService {
                 status: error.status ? error.status : HttpStatus.INTERNAL_SERVER_ERROR,
                 message: error.message
             }
+        }
+    }
+
+
+    validateAuthenticatedUser(user, authUser) {
+        if (!authUser.id || (user.id !== authUser.id)) {
+            throw new UserException(HttpStatus.FORBIDDEN, "User cannot see others users data.")
         }
     }
 

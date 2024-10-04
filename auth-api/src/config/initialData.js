@@ -7,13 +7,20 @@ export async function createInitialData() {
         
         await User.sync({ force: true });
 
-        let password = await bcrypt.hash("123456", 10);
+        let password1 = await bcrypt.hash("123456", 10);
+        let password2 = await bcrypt.hash("123456", 10);
 
 
         let firstUser = await User.create({
-            name: "User Test",
-            email: "testeuser@gmail.com",
-            password: password
+            name: "User Test-1",
+            email: "user1@gmail.com",
+            password: password1
+        });
+
+        let secondUser = await User.create({
+            name: "User Test-2",
+            email: "user2@gmail.com",
+            password: password2
         });
 
     } catch (err) {
