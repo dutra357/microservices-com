@@ -37,7 +37,6 @@ class UserService {
         }
     }
 
-
     async validatePassword(password, hashedPassword) {
         if (!await bcrypt.compare(password, hashedPassword)) {
             throw new UserException(HttpStatus.UNAUTHORIZED, "Password doesn't match.");
@@ -49,6 +48,7 @@ class UserService {
             throw new UserException(HttpStatus.UNAUTHORIZED, "Email and password must be informed.")
         }
     }
+
 
     async findByEmail(request) {
         try {
