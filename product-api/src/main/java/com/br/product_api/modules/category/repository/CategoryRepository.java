@@ -1,4 +1,4 @@
-package com.br.product_api.modules.category.repository.repository;
+package com.br.product_api.modules.category.repository;
 
 import com.br.product_api.modules.category.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
