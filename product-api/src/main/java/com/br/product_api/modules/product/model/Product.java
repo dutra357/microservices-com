@@ -1,5 +1,7 @@
-package com.br.product_api.modules;
+package com.br.product_api.modules.product.model;
 
+import com.br.product_api.modules.category.model.Category;
+import com.br.product_api.modules.supplier.model.Supplier;
 import jakarta.persistence.*;
 
 import java.util.Objects;

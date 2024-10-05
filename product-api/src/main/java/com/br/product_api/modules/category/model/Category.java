@@ -1,4 +1,4 @@
-package com.br.product_api.modules;
+package com.br.product_api.modules.category.model;
 
 import jakarta.persistence.*;
 
