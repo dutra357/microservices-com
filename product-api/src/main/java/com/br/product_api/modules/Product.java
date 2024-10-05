@@ -1,25 +1,45 @@
 package com.br.product_api.modules;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
 @Entity
+@Table(name = "product", schema = "public")
 public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "fk_supplier", nullable = false)
     private Supplier supplier;
 
+    @ManyToOne
+    @JoinColumn(name = "fk.category", nullable = false)
     private Category category;
 
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
+
     public Product() {}
-    public Product(String name, Supplier supplier, Category category) {
+    public Product(String name, Supplier supplier, Category category, Integer quantity) {
         this.name = name;
         this.supplier = supplier;
         this.category = category;
+        this.quantity = quantity;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public Integer getId() {

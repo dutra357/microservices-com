@@ -1,14 +1,18 @@
 package com.br.product_api.modules;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
 @Entity
+@Table(name = "category", schema = "public")
 public class Category {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "description", nullable = false)
     private String description;
 
     public Category() {}

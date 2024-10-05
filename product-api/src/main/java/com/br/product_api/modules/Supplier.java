@@ -1,14 +1,18 @@
 package com.br.product_api.modules;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
 @Entity
+@Table(name = "supplier", schema = "public")
 public class Supplier {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     public Supplier() {}
