@@ -8,6 +8,8 @@ import com.br.product_api.modules.supplier.model.Supplier;
 import com.br.product_api.modules.supplier.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -26,6 +28,12 @@ public class SupplierService implements SupplierInterface {
         var newSupplier = new Supplier(request.name());
         repository.save(newSupplier);
         return new SupplierResponse(newSupplier.getId(), newSupplier.getName());
+    }
+
+    @Override
+    public Supplier findById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ValidationException("There's no supplier for the given id."));
     }
 
     private void validateSupplierRequest(SupplierRequest category) {

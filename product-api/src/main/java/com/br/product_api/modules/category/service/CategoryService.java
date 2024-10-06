@@ -8,6 +8,8 @@ import com.br.product_api.modules.category.model.Category;
 import com.br.product_api.modules.category.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -26,6 +28,12 @@ public class CategoryService implements CategoryInterface {
         var newCategory = new Category(request.description());
         repository.save(newCategory);
         return new CategoryResponse(newCategory.getId(), newCategory.getDescription());
+    }
+
+    @Override
+    public Category findById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ValidationException("There's no supplier for the given id."));
     }
 
     private void validateCategoryRequest(CategoryRequest category) {
