@@ -4,11 +4,18 @@ import com.br.product_api.modules.category.dto.CategoryRequest;
 import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.model.Category;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CategoryInterface {
 
     CategoryResponse save(CategoryRequest request);
 
-    Category findById(Integer id);
+    CategoryResponse findById(Integer id);
+
+    Category findCategoryById(Integer id);
+
+    List<CategoryResponse> findByDescription(String description);
+
+    List<CategoryResponse> findAll();
 }

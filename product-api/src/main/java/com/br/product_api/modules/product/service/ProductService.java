@@ -12,6 +12,8 @@ import com.br.product_api.modules.supplier.dto.SupplierResponse;
 import com.br.product_api.modules.supplier.service.SupplierService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -31,14 +33,67 @@ public class ProductService implements ProductInterface {
     public ProductResponse save(ProductRequest request) {
         validateProductRequest(request);
 
-        var category = categoryService.findById(request.categoryId());
-        var supplier = supplierService.findById(request.supplierId());
-        var newProduct = new Product(request.name(), supplier, category, request.quantity());
+        var category = categoryService.findCategoryById(request.categoryId());
+        var supplier = supplierService.findSupplierById(request.supplierId());
 
-        repository.save(newProduct);
-        return new ProductResponse(newProduct.getId(), newProduct.getName(),
-                request.quantity(), newProduct.getCreateAt(), new SupplierResponse(supplier.getId(),
-                supplier.getName()), new CategoryResponse(category.getId(), category.getDescription()));
+        var newProduct = new Product(request.name(), supplier, category, request.quantity());
+        return responseBuilder(repository.save(newProduct));
+    }
+
+    @Override
+    public List<ProductResponse> findBySupplierId(Integer id) {
+        var productsBySupplier = repository.findBySupplierId(id);
+        return productListResponse(productsBySupplier);
+    }
+
+    @Override
+    public List<ProductResponse> findByCategoryId(Integer id) {
+        var productsByCategory = repository.findByCategoryId(id);
+        return productListResponse(productsByCategory);
+    }
+
+    @Override
+    public List<ProductResponse> findProductByName(String name) {
+        var productsByName = repository.findByNameIgnoreCaseContaining(name);
+        return productListResponse(productsByName);
+    }
+
+    @Override
+    public List<ProductResponse> findAll() {
+        var allProducts = repository.findAll();
+        return productListResponse(allProducts);
+    }
+
+    @Override
+    public ProductResponse findById(Integer id) {
+        Product product = repository.findById(id)
+                    .orElseThrow(() -> new ValidationException("Product not found."));
+        return responseBuilder(product);
+    }
+
+    @Override
+    public Boolean existsByCategoryId(Integer id) {
+        return repository.existsByCategoryId(id);
+    }
+
+    @Override
+    public Boolean existsBySupplierId(Integer id) {
+        return repository.existsBySupplierId(id);
+    }
+
+    private ProductResponse responseBuilder(Product product) {
+        return new ProductResponse(product.getId(), product.getName(), product.getQuantity(), product.getCreateAt(),
+                new SupplierResponse(product.getSupplier().getId(), product.getSupplier().getName()),
+                new CategoryResponse(product.getCategory().getId(), product.getCategory().getDescription()));
+    }
+
+    private List<ProductResponse> productListResponse (List<Product> list) {
+        return list.stream()
+                .map(product -> new ProductResponse(product.getId(), product.getName(),
+                        product.getQuantity(), product.getCreateAt(),
+                        new SupplierResponse(product.getSupplier().getId(), product.getSupplier().getName()),
+                        new CategoryResponse(product.getCategory().getId(), product.getCategory().getDescription())))
+                .toList();
     }
 
     private void validateProductRequest(ProductRequest product) {

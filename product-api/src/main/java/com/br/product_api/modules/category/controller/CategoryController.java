@@ -5,10 +5,9 @@ import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.interfaces.CategoryInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -24,6 +23,21 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryResponse> save(@RequestBody(required = false) CategoryRequest category) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(category));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CategoryResponse>> findAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll());
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<CategoryResponse> findById(@PathVariable Integer id) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findById(id));
+    }
+
+    @GetMapping("/description/{parameter}")
+    public ResponseEntity<List<CategoryResponse>> findByDescription(@PathVariable String parameter) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findByDescription(parameter));
     }
 
 }
