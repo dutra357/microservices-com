@@ -5,6 +5,7 @@ import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.service.CategoryService;
 import com.br.product_api.modules.product.dto.ProductRequest;
 import com.br.product_api.modules.product.dto.ProductResponse;
+import com.br.product_api.modules.product.dto.StockDTO;
 import com.br.product_api.modules.product.interfaces.ProductInterface;
 import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
@@ -99,19 +100,15 @@ public class ProductService implements ProductInterface {
         if (request.name() != productUpdate.getName()) {
             productUpdate.setName(request.name());
         }
-
         if (request.supplierId() != productUpdate.getSupplier().getId()) {
             productUpdate.setSupplier(supplierService.findSupplierById(productUpdate.getSupplier().getId()));
         }
-
         if (request.categoryId() != productUpdate.getCategory().getId()) {
             productUpdate.setCategory(categoryService.findCategoryById(productUpdate.getCategory().getId()));
         }
-
         if (request.quantity() != productUpdate.getQuantity()) {
             productUpdate.setQuantity(request.quantity());
         }
-
         return responseBuilder(repository.save(productUpdate));
     }
 
@@ -150,5 +147,9 @@ public class ProductService implements ProductInterface {
         if (isEmpty(product.supplierId())) {
             throw new ValidationException("A supplier ID was not informed.");
         }
+    }
+
+    public void updateProductStock(StockDTO product) {
+
     }
 }
