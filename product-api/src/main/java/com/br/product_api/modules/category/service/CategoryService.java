@@ -7,10 +7,10 @@ import com.br.product_api.modules.category.interfaces.CategoryInterface;
 import com.br.product_api.modules.category.model.Category;
 import com.br.product_api.modules.category.repository.CategoryRepository;
 import com.br.product_api.modules.product.service.ProductService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -20,7 +20,7 @@ public class CategoryService implements CategoryInterface {
     public final CategoryRepository repository;
     public final ProductService productService;
 
-    public CategoryService(CategoryRepository repository, ProductService productService) {
+    public CategoryService(CategoryRepository repository, @Lazy ProductService productService) {
         this.repository = repository;
         this.productService = productService;
     }
@@ -63,6 +63,35 @@ public class CategoryService implements CategoryInterface {
                 .map(category -> new CategoryResponse(category.getId(), category.getDescription()))
                 .toList();
         return response;
+    }
+
+    @Override
+    public void delete(Integer id) {
+        if (productService.existsByCategoryId(id)) {
+            throw new ValidationException("The category has already been assigned to a product");
+        } else {
+            repository.delete(repository.findById(id).get());
+        }
+    }
+
+    @Override
+    public CategoryResponse update(CategoryRequest request, Integer id) {
+        Category categoryUpdate = repository.findById(id).orElseThrow(
+                () -> new ValidationException("Product not found for this ID.")
+        );
+
+        if (request.description() != categoryUpdate.getDescription()) {
+            categoryUpdate.setDescription(request.description());
+        }
+
+        repository.save(categoryUpdate);
+        return new CategoryResponse(categoryUpdate.getId(), categoryUpdate.getDescription());
+    }
+
+    private void validateId (Integer id) {
+        if (isEmpty(id)) {
+            throw new ValidationException("The product id must be informed.");
+        }
     }
 
     private void validateCategoryRequest(CategoryRequest category) {

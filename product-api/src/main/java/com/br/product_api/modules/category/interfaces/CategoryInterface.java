@@ -5,7 +5,6 @@ import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.model.Category;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CategoryInterface {
 
@@ -18,4 +17,8 @@ public interface CategoryInterface {
     List<CategoryResponse> findByDescription(String description);
 
     List<CategoryResponse> findAll();
+
+    void delete (Integer id);
+
+    CategoryResponse update(CategoryRequest request, Integer id);
 }

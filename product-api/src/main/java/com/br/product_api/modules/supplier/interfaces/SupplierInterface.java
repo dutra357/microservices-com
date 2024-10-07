@@ -18,4 +18,8 @@ public interface SupplierInterface {
 
     List<SupplierResponse> findAll();
 
+    void delete(Integer id);
+
+    SupplierResponse update(SupplierRequest request, Integer id);
+
 }

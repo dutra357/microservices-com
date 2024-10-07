@@ -3,7 +3,6 @@ package com.br.product_api.modules.product.interfaces;
 import com.br.product_api.modules.product.dto.ProductRequest;
 import com.br.product_api.modules.product.dto.ProductResponse;
 
-import java.util.Iterator;
 import java.util.List;
 
 public interface ProductInterface {
@@ -20,7 +19,11 @@ public interface ProductInterface {
 
     ProductResponse findById (Integer id);
 
+    void delete (Integer id);
+
     Boolean existsByCategoryId (Integer id);
 
     Boolean existsBySupplierId (Integer id);
+
+    ProductResponse update(ProductRequest request, Integer id);
 }

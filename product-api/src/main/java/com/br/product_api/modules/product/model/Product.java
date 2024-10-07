@@ -2,8 +2,6 @@ package com.br.product_api.modules.product.model;
 
 import com.br.product_api.modules.category.model.Category;
 import com.br.product_api.modules.supplier.model.Supplier;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -31,7 +29,6 @@ public class Product {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createAt;
 

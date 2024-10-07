@@ -10,6 +10,7 @@ import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
 import com.br.product_api.modules.supplier.service.SupplierService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +24,8 @@ public class ProductService implements ProductInterface {
     private final SupplierService supplierService;
     private final CategoryService categoryService;
 
-    public ProductService(ProductRepository repository, SupplierService supplierService, CategoryService categoryService) {
+    public ProductService(ProductRepository repository,
+                          @Lazy SupplierService supplierService, @Lazy CategoryService categoryService) {
         this.repository = repository;
         this.supplierService = supplierService;
         this.categoryService = categoryService;
@@ -43,25 +45,25 @@ public class ProductService implements ProductInterface {
     @Override
     public List<ProductResponse> findBySupplierId(Integer id) {
         var productsBySupplier = repository.findBySupplierId(id);
-        return productListResponse(productsBySupplier);
+        return productListResponseBuilder(productsBySupplier);
     }
 
     @Override
     public List<ProductResponse> findByCategoryId(Integer id) {
         var productsByCategory = repository.findByCategoryId(id);
-        return productListResponse(productsByCategory);
+        return productListResponseBuilder(productsByCategory);
     }
 
     @Override
     public List<ProductResponse> findProductByName(String name) {
         var productsByName = repository.findByNameIgnoreCaseContaining(name);
-        return productListResponse(productsByName);
+        return productListResponseBuilder(productsByName);
     }
 
     @Override
     public List<ProductResponse> findAll() {
         var allProducts = repository.findAll();
-        return productListResponse(allProducts);
+        return productListResponseBuilder(allProducts);
     }
 
     @Override
@@ -69,6 +71,13 @@ public class ProductService implements ProductInterface {
         Product product = repository.findById(id)
                     .orElseThrow(() -> new ValidationException("Product not found."));
         return responseBuilder(product);
+    }
+
+    @Override
+    public void delete (Integer id) {
+        repository.delete(repository.findById(id).orElseThrow(
+                () -> new ValidationException("Product not found.")
+        ));
     }
 
     @Override
@@ -81,13 +90,38 @@ public class ProductService implements ProductInterface {
         return repository.existsBySupplierId(id);
     }
 
+    @Override
+    public ProductResponse update(ProductRequest request, Integer id) {
+        Product productUpdate = repository.findById(id).orElseThrow(
+                () -> new ValidationException("Product not found for the given ID.")
+        );
+
+        if (request.name() != productUpdate.getName()) {
+            productUpdate.setName(request.name());
+        }
+
+        if (request.supplierId() != productUpdate.getSupplier().getId()) {
+            productUpdate.setSupplier(supplierService.findSupplierById(productUpdate.getSupplier().getId()));
+        }
+
+        if (request.categoryId() != productUpdate.getCategory().getId()) {
+            productUpdate.setCategory(categoryService.findCategoryById(productUpdate.getCategory().getId()));
+        }
+
+        if (request.quantity() != productUpdate.getQuantity()) {
+            productUpdate.setQuantity(request.quantity());
+        }
+
+        return responseBuilder(repository.save(productUpdate));
+    }
+
     private ProductResponse responseBuilder(Product product) {
         return new ProductResponse(product.getId(), product.getName(), product.getQuantity(), product.getCreateAt(),
                 new SupplierResponse(product.getSupplier().getId(), product.getSupplier().getName()),
                 new CategoryResponse(product.getCategory().getId(), product.getCategory().getDescription()));
     }
 
-    private List<ProductResponse> productListResponse (List<Product> list) {
+    private List<ProductResponse> productListResponseBuilder (List<Product> list) {
         return list.stream()
                 .map(product -> new ProductResponse(product.getId(), product.getName(),
                         product.getQuantity(), product.getCreateAt(),

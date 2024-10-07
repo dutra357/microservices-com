@@ -40,4 +40,15 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.findByDescription(parameter));
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        categoryService.delete(id);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<CategoryResponse> update(@RequestBody(required = false) CategoryRequest category, @PathVariable Integer id) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(category, id));
+    }
+
 }
