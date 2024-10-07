@@ -10,7 +10,7 @@ import com.br.product_api.modules.product.interfaces.ProductInterface;
 import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
-import com.br.product_api.modules.supplier.service.SupplierService;
+import com.br.product_api.modules.supplier.service.SupplierService;s
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -150,6 +150,27 @@ public class ProductService implements ProductInterface {
     }
 
     public void updateProductStock(StockDTO product) {
+        try {
+            validateStockStream(product);
+        } catch (Exception e) {
+            throw new
+        }
+    }
 
+    private void validateStockStream(StockDTO product) {
+        if (isEmpty(product) || isEmpty(product.salesId())) {
+            throw new ValidationException("The product data an sales ID cannot be null.");
+        }
+
+        if (isEmpty(product.products())) {
+            throw new ValidationException("The list of sales must be informed.");
+        }
+
+        product.products()
+                .forEach(saleProduct -> {
+                    if (isEmpty(saleProduct.quantity()) || isEmpty(saleProduct.productId())) {
+                        throw new ValidationException("Product ID and quantity must be informed.");
+                    }
+                });
     }
 }
