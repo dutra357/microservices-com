@@ -1,4 +1,4 @@
-package com.br.product_api.config;
+package com.br.product_api.config.exception;
 
 public class ExceptionDetails {
 

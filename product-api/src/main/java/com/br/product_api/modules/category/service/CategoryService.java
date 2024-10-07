@@ -1,6 +1,6 @@
 package com.br.product_api.modules.category.service;
 
-import com.br.product_api.config.ValidationException;
+import com.br.product_api.config.exception.ValidationException;
 import com.br.product_api.modules.category.dto.CategoryRequest;
 import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.interfaces.CategoryInterface;

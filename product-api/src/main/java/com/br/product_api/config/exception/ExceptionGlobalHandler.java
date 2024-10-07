@@ -1,4 +1,4 @@
-package com.br.product_api.config;
+package com.br.product_api.config.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,5 +15,14 @@ public class ExceptionGlobalHandler {
         newDetails.setMessage(validationException.getMessage());
 
         return new ResponseEntity<>(newDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<?> handleAuthorizationException(AuthenticationException authenticationException) {
+        var newDetails = new ExceptionDetails();
+        newDetails.setStatus(HttpStatus.UNAUTHORIZED.value());
+        newDetails.setMessage(authenticationException.getMessage());
+
+        return new ResponseEntity<>(newDetails, HttpStatus.UNAUTHORIZED);
     }
 }

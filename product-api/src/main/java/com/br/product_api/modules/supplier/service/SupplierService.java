@@ -1,6 +1,6 @@
 package com.br.product_api.modules.supplier.service;
 
-import com.br.product_api.config.ValidationException;
+import com.br.product_api.config.exception.ValidationException;
 import com.br.product_api.modules.product.service.ProductService;
 import com.br.product_api.modules.supplier.dto.SupplierRequest;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
