@@ -45,6 +45,10 @@ public class Product {
         this.quantity = quantity;
     }
 
+    public void updateStock(Integer quantityEntry) {
+        quantity = quantity - quantityEntry;
+    }
+
     public Integer getQuantity() {
         return quantity;
     }

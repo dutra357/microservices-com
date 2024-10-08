@@ -9,8 +9,11 @@ import com.br.product_api.modules.product.dto.StockDTO;
 import com.br.product_api.modules.product.interfaces.ProductInterface;
 import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
+import com.br.product_api.modules.sales.dto.SalesConfirmationDTO;
+import com.br.product_api.modules.sales.enums.SalesStatus;
+import com.br.product_api.modules.sales.rabbitMq.SalesConfirmationSender;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
-import com.br.product_api.modules.supplier.service.SupplierService;s
+import com.br.product_api.modules.supplier.service.SupplierService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +27,14 @@ public class ProductService implements ProductInterface {
     private final ProductRepository repository;
     private final SupplierService supplierService;
     private final CategoryService categoryService;
+    private final SalesConfirmationSender salesConfirmationSender;
 
     public ProductService(ProductRepository repository,
-                          @Lazy SupplierService supplierService, @Lazy CategoryService categoryService) {
+                          @Lazy SupplierService supplierService, @Lazy CategoryService categoryService, SalesConfirmationSender salesConfirmationSender) {
         this.repository = repository;
         this.supplierService = supplierService;
         this.categoryService = categoryService;
+        this.salesConfirmationSender = salesConfirmationSender;
     }
 
     @Override
@@ -152,9 +157,24 @@ public class ProductService implements ProductInterface {
     public void updateProductStock(StockDTO product) {
         try {
             validateStockStream(product);
+            product.products()
+                    .forEach(saleProduct -> {
+                        var existProduct = privateFindById(saleProduct.productId());
+                        if (saleProduct.quantity() > existProduct.getQuantity()) {
+                            throw new ValidationException(String
+                                    .format("The product id %s is out of stock.", existProduct.getId()));
+                        }
+                        existProduct.updateStock(saleProduct.quantity());
+                    });
         } catch (Exception e) {
-            throw new
+            salesConfirmationSender
+                    .sendSalesConfirmation(new SalesConfirmationDTO(product.salesId(), SalesStatus.REJECTED));
         }
+    }
+
+    private Product privateFindById(Integer id) {
+        Product product = repository.findById(id).get();
+        return product;
     }
 
     private void validateStockStream(StockDTO product) {
