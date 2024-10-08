@@ -2,6 +2,7 @@ package com.br.product_api.modules.product.controller;
 
 import com.br.product_api.modules.product.dto.ProductRequest;
 import com.br.product_api.modules.product.dto.ProductResponse;
+import com.br.product_api.modules.product.dto.ProductSalesResponse;
 import com.br.product_api.modules.product.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,5 +59,10 @@ public class ProductController {
     @PutMapping("{id}")
     public ResponseEntity<ProductResponse> update(@RequestBody(required = false) ProductRequest product, @PathVariable Integer id) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.update(product, id));
+    }
+
+    @GetMapping("{productId}/sales")
+    public ResponseEntity<ProductSalesResponse> findProductSales(@PathVariable Integer productId) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.findProductSales(productId));
     }
 }

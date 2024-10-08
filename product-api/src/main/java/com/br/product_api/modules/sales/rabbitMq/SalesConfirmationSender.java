@@ -10,7 +10,7 @@ public class SalesConfirmationSender {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public SalesConfirmationSender(RabbitTemplate rabbitTemplate, SalesConfirmationSender salesConfirmationSender) {
+    public SalesConfirmationSender(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 

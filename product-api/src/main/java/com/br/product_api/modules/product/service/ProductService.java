@@ -5,36 +5,49 @@ import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.service.CategoryService;
 import com.br.product_api.modules.product.dto.ProductRequest;
 import com.br.product_api.modules.product.dto.ProductResponse;
+import com.br.product_api.modules.product.dto.ProductSalesResponse;
 import com.br.product_api.modules.product.dto.StockDTO;
 import com.br.product_api.modules.product.interfaces.ProductInterface;
 import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
+import com.br.product_api.modules.sales.client.SalesClient;
 import com.br.product_api.modules.sales.dto.SalesConfirmationDTO;
+import com.br.product_api.modules.sales.dto.SalesProductResponse;
 import com.br.product_api.modules.sales.enums.SalesStatus;
 import com.br.product_api.modules.sales.rabbitMq.SalesConfirmationSender;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
 import com.br.product_api.modules.supplier.service.SupplierService;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static com.br.product_api.config.requestUtils.RequestUtil.getActualRequest;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 public class ProductService implements ProductInterface {
 
+    private static final Integer ZERO = 0;
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String TRANSACTION_ID = "transactionId";
+    private static final String SERVICE_ID = "serviceId";
+
     private final ProductRepository repository;
     private final SupplierService supplierService;
     private final CategoryService categoryService;
     private final SalesConfirmationSender salesConfirmationSender;
+    private final SalesClient salesClient;
 
     public ProductService(ProductRepository repository,
-                          @Lazy SupplierService supplierService, @Lazy CategoryService categoryService, SalesConfirmationSender salesConfirmationSender) {
+                          @Lazy SupplierService supplierService, @Lazy CategoryService categoryService, SalesConfirmationSender salesConfirmationSender, SalesClient salesClient) {
         this.repository = repository;
         this.supplierService = supplierService;
         this.categoryService = categoryService;
         this.salesConfirmationSender = salesConfirmationSender;
+        this.salesClient = salesClient;
     }
 
     @Override
@@ -154,9 +167,42 @@ public class ProductService implements ProductInterface {
         }
     }
 
+    public ProductSalesResponse findProductSales(Integer id) {
+        var product = privateFindById(id);
+        var sales = getSalesByProductId(product.getId());
+        return salesResponseBuilder(product, sales);
+    }
+
+    private ProductSalesResponse salesResponseBuilder(Product product, SalesProductResponse salesList) {
+        return new ProductSalesResponse(product.getId(), product.getName(), product.getQuantity(), product.getCreateAt(),
+                new SupplierResponse(product.getSupplier().getId(), product.getSupplier().getName()),
+                new CategoryResponse(product.getCategory().getId(), product.getCategory().getDescription()),
+                salesList.salesIds());
+    }
+
+    private SalesProductResponse getSalesByProductId(Integer productId) {
+        try {
+            var actualRequest = getActualRequest();
+            var actualToken = actualRequest.getHeader(AUTHORIZATION);
+            var transactionId = actualRequest.getHeader(TRANSACTION_ID);
+            //var serviceId = actualRequest.getAttribute(SERVICE_ID);
+
+            var response = salesClient
+                    .findSalesByProductId(productId, actualToken, transactionId)
+                    .orElseThrow(() -> new ValidationException("Sales wasn't founded for this given id product."));
+
+            return response;
+        } catch (Exception exception) {
+            throw new ValidationException("Sales cannot be found.");
+        }
+    }
+
+    @Transactional
     public void updateProductStock(StockDTO product) {
         try {
             validateStockStream(product);
+
+            var productsToUpDate = new ArrayList<Product>();
             product.products()
                     .forEach(saleProduct -> {
                         var existProduct = privateFindById(saleProduct.productId());
@@ -165,11 +211,13 @@ public class ProductService implements ProductInterface {
                                     .format("The product id %s is out of stock.", existProduct.getId()));
                         }
                         existProduct.updateStock(saleProduct.quantity());
-                        repository.save(existProduct);
-
-                        var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED);
-                        salesConfirmationSender.sendSalesConfirmation(confirmationMessage);
+                        productsToUpDate.add(existProduct);
                     });
+            if (!isEmpty(productsToUpDate)) {
+                repository.saveAll(productsToUpDate);
+                var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED);
+                salesConfirmationSender.sendSalesConfirmation(confirmationMessage);
+            }
         } catch (Exception e) {
             salesConfirmationSender
                     .sendSalesConfirmation(new SalesConfirmationDTO(product.salesId(), SalesStatus.REJECTED));
@@ -197,4 +245,6 @@ public class ProductService implements ProductInterface {
                     }
                 });
     }
+
+
 }

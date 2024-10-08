@@ -15,7 +15,7 @@ public class Middleware implements HandlerInterceptor {
     private static final String AUTHORIZATION = "Authorization";
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if(isOptions(request)) {
+        if (isOptions(request)) {
             return true;
         }
 
