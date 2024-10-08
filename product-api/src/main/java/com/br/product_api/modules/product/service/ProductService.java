@@ -165,6 +165,10 @@ public class ProductService implements ProductInterface {
                                     .format("The product id %s is out of stock.", existProduct.getId()));
                         }
                         existProduct.updateStock(saleProduct.quantity());
+                        repository.save(existProduct);
+
+                        var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED);
+                        salesConfirmationSender.sendSalesConfirmation(confirmationMessage);
                     });
         } catch (Exception e) {
             salesConfirmationSender
