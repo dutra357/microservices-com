@@ -49,13 +49,11 @@ services:
 
 
   sales-db:
-    image: bitnami/mongodb
-    container_name: sales-db
+    image: mongo:latest
     restart: always
     environment:
-      - MONGODB_DATABASE=sales-db
-      - MONGODB_USER=admin
-      - MONGODB_PASSWORD=123456
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=123456
     ports:
       - 27017:27017
       - 28017:28017    
