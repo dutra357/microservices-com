@@ -1,12 +1,10 @@
 package com.br.product_api.modules.product.service;
 
+import com.br.product_api.config.exception.SuccessResponse;
 import com.br.product_api.config.exception.ValidationException;
 import com.br.product_api.modules.category.dto.CategoryResponse;
 import com.br.product_api.modules.category.service.CategoryService;
-import com.br.product_api.modules.product.dto.ProductRequest;
-import com.br.product_api.modules.product.dto.ProductResponse;
-import com.br.product_api.modules.product.dto.ProductSalesResponse;
-import com.br.product_api.modules.product.dto.StockDTO;
+import com.br.product_api.modules.product.dto.*;
 import com.br.product_api.modules.product.interfaces.ProductInterface;
 import com.br.product_api.modules.product.model.Product;
 import com.br.product_api.modules.product.repository.ProductRepository;
@@ -246,5 +244,25 @@ public class ProductService implements ProductInterface {
                 });
     }
 
+    public SuccessResponse verifyStock(VerifyStockQuantity request) {
+        if (isEmpty(request) || isEmpty(request.products())) {
+            throw new ValidationException("Request cannot be null.");
+        }
+
+        request.products()
+                .forEach(this::validateStock);
+        return new SuccessResponse(200, "Stock available.");
+    }
+
+    private void validateStock (ProductQuantityDTO productQuantity) {
+        if (isEmpty(productQuantity.productId()) || isEmpty(productQuantity.quantity())) {
+            throw new ValidationException("Product ID and quantity cannot be empty.");
+        }
+        var product = privateFindById(productQuantity.productId());
+
+        if (productQuantity.quantity() > product.getQuantity()) {
+            throw new ValidationException(String.format("Quantity not available. Product ID: %s", product.getId()));
+        }
+    }
 
 }
