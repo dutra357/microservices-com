@@ -1,17 +1,22 @@
 import express from "express";
 
 import { startInitialData } from "./src/config/db/mockData.js"
-import { connect } from "./src/config/db/mongoConfig.js";
+import { connectMongoDb } from "./src/config/db/mongoConfig.js";
 import Order from "./src/modules/sales/model/Order.js";
+import checkToken from "./src/config/auth/checkToken.js";
 
+import {connectRabbitMq} from "./src/config/rabbit/rabbitConfig.js";
 
 
 const app = express();
 const env = process.env;
 const PORT = env.PORT || 8082
 
-connect();
-startInitialData()
+connectMongoDb();
+startInitialData();
+connectRabbitMq();
+
+app.use(checkToken);
 
 app.get('/api/status', async (req, res) => {
     let teste = await Order.find();
