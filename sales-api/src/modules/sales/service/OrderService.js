@@ -3,15 +3,15 @@ import { sendMessageProductStockUpdateQueue } from "../../product/rabbitMq/produ
 import * as httpStatus from "../../../config/constants/httpStatus.js";
 import {ACCEPTED, PENDING, REJECTED} from "../status/OrderStatus.js";
 import OrderException from "../exception/OrderException.js";
-import { BAD_REQUEST } from "../../../config/constants/httpStatus.js";
+import {BAD_REQUEST, INTERNAL_SERVER_ERROR, SUCCESS} from "../../../config/constants/httpStatus.js";
 import ProductClient from "../../client/ProductClient.js";
 
 class OrderService {
     async createOrder(req) {
         try {
             let orderData = req.body;
-            this.validateOrderData(orderData);
 
+            this.validateOrderData(orderData);
             const {authUser} = req;
             const { authorization } = req.headers;
 
@@ -20,7 +20,6 @@ class OrderService {
 
             let createdOrder = await OrderRepository.save(order);
             this.sendMessage(createdOrder);
-            sendMessageProductStockUpdateQueue(createdOrder.products);
             return {
                 status: httpStatus.SUCCESS,
                 order,
@@ -42,12 +41,12 @@ class OrderService {
 
                 if (existingOrder && order.status !== existingOrder.status) {
                     existingOrder.status = order.status;
+                    existingOrder.updatedAt = new Date();
                     await OrderRepository.save(existingOrder);
                 }
             } else {
                 console.warn("The order message was not complete.")
             }
-
         } catch (error) {
             console.error("Could not parse order message from queue.")
             console.error(error.message);
@@ -83,6 +82,33 @@ class OrderService {
             products: createdOrder.products
         }
         sendMessageProductStockUpdateQueue(createdOrder.products);
+    }
+
+    async findById(req) {
+        const { id } = req.params;
+        this.validateId(id);
+        const existingOrder = await OrderRepository.findById(id);
+        if (!existingOrder) {
+            throw new OrderException(BAD_REQUEST, "The order was not found.")
+        }
+
+        try {
+            return {
+                status: SUCCESS,
+                existingOrder,
+            }
+        } catch (error) {
+            return {
+                status: error.status ? error.status : INTERNAL_SERVER_ERROR,
+                message: error.message
+            }
+        }
+    }
+
+    validateId(id) {
+        if (!id) {
+            throw new OrderException(BAD_REQUEST, "The order ID must be informed.")
+        }
     }
 }
 export default new OrderService();

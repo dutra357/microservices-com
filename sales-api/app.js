@@ -4,6 +4,7 @@ import { startInitialData } from "./src/config/db/mockData.js"
 import { connectMongoDb } from "./src/config/db/mongoConfig.js";
 import Order from "./src/modules/sales/model/Order.js";
 import checkToken from "./src/config/auth/checkToken.js";
+import orderRoutes from "./src/modules/sales/routes/OrderRoutes.js";
 
 import {connectRabbitMq} from "./src/config/rabbit/rabbitConfig.js";
 
@@ -19,7 +20,8 @@ connectMongoDb();
 startInitialData();
 connectRabbitMq();
 
-//app.use(checkToken);
+app.use(checkToken);
+app.use(orderRoutes);
 
 app.get("/teste", (req, res) => {
     try {
