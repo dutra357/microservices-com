@@ -1,0 +1,88 @@
+import OrderRepository from "../repository/OrderRepository.js";
+import { sendMessageProductStockUpdateQueue } from "../../product/rabbitMq/productStockUpdateSender.js";
+import * as httpStatus from "../../../config/constants/httpStatus.js";
+import {ACCEPTED, PENDING, REJECTED} from "../status/OrderStatus.js";
+import OrderException from "../exception/OrderException.js";
+import { BAD_REQUEST } from "../../../config/constants/httpStatus.js";
+
+class OrderService {
+    async createOrder(req) {
+        try {
+            let orderData = req.body;
+            this.validateOrderData(orderData);
+
+            const {authUser} = req;
+            const { authorization } = req.headers;
+
+            let order = this.createInitialOrderData(orderData, authUser);
+            await this.validateStock(order);
+
+            let createdOrder = await OrderRepository.save(order);
+            this.sendMessage(createdOrder);
+            sendMessageProductStockUpdateQueue(createdOrder.products);
+            return {
+                status: httpStatus.SUCCESS,
+                order,
+            }
+        } catch (error) {
+            return {
+                status: error.status ? error.status : httpStatus.INTERNAL_SERVER_ERROR,
+                message: error.message
+            }
+        }
+    }
+
+    async updateOrder(message) {
+        try {
+            const order = JSON.parse(message);
+
+            if (order.salesId && order.status) {
+                let existingOrder = await OrderRepository.findById(order.salesId);
+
+                if (existingOrder && order.status !== existingOrder.status) {
+                    existingOrder.status = order.status;
+                    await OrderRepository.save(existingOrder);
+                }
+            } else {
+                console.warn("The order message was not complete.")
+            }
+
+        } catch (error) {
+            console.error("Could not parse order message from queue.")
+            console.error(error.message);
+        }
+    }
+
+    async validateStock(order) {
+
+        let stockLimit = true;
+        if (stockLimit) {
+            throw new OrderException(BAD_REQUEST, "The stock is out of products.")
+        }
+    }
+
+    validateOrderData(data) {
+        if (!data || !data.products) {
+            throw new OrderException(BAD_REQUEST, "The products must be informed.");
+        }
+    }
+
+    createInitialOrderData(orderData, authUser) {
+        return {
+            status: PENDING,
+            user: authUser,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            products: orderData,
+        };
+    }
+
+    sendMessage(createdOrder) {
+        const message = {
+            salesId: createdOrder.id,
+            products: createdOrder.products
+        }
+        sendMessageProductStockUpdateQueue(createdOrder.products);
+    }
+}
+export default new OrderService();

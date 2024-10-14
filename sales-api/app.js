@@ -7,6 +7,9 @@ import checkToken from "./src/config/auth/checkToken.js";
 
 import {connectRabbitMq} from "./src/config/rabbit/rabbitConfig.js";
 
+import { sendMessageProductStockUpdateQueue } from "./src/modules/product/rabbitMq/productStockUpdateSender.js";
+import e from "express";
+
 
 const app = express();
 const env = process.env;
@@ -16,7 +19,28 @@ connectMongoDb();
 startInitialData();
 connectRabbitMq();
 
-app.use(checkToken);
+//app.use(checkToken);
+
+app.get("/teste", (req, res) => {
+    try {
+        sendMessageProductStockUpdateQueue([
+            {
+                "productId" : 1001,
+                "quantity": 1
+            },
+            {
+                "productId" : 1002,
+                "quantity": 9
+            }
+        ]);
+        return res.status(200).json({status: 200});
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({error: true});
+    }
+})
+
 
 app.get('/api/status', async (req, res) => {
     let teste = await Order.find();

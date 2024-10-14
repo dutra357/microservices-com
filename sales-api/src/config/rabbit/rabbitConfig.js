@@ -1,13 +1,14 @@
 import amqp from "amqplib/callback_api.js";
-import { listenToSalesConfirmationListener } from "../../modules/sales/rabbitMq/salesConfirmationListener.js";
+import { listenToSalesConfirmationQueue } from "../../modules/sales/rabbitMq/salesConfirmationListener.js";
 
-import { PRODUCT_TOPIC, SALES_CONFIRMATION_QUEUE,
-    SALES_CONFIRMATION_ROUTING_QUEUE, PRODUCT_STOCK_UPDATE_QUEUE,
-    PRODUCT_STOCK_UPDATE_ROUTING_KEY } from "./queue.js"
+import {
+    PRODUCT_TOPIC, SALES_CONFIRMATION_ROUTING_QUEUE, PRODUCT_STOCK_UPDATE_QUEUE,
+    PRODUCT_STOCK_UPDATE_ROUTING_KEY, SALES_CONFIRMATION_QUEUE
+} from "./queue.js"
 
 import { RABBIT_MQ_URL } from "../constants/secrets.js";
 
-const TIME = 2000;
+const TIME = 1000;
 const HALF_MINUTES = 30000;
 const CONTAINER_ENV = "container";
 
@@ -34,14 +35,19 @@ export async function connectRabbitMq() {
             }
             createQueue(connection, PRODUCT_STOCK_UPDATE_QUEUE, PRODUCT_STOCK_UPDATE_ROUTING_KEY,
                 PRODUCT_TOPIC);
-            createQueue(connection, SALES_CONFIRMATION_ROUTING_QUEUE, SALES_CONFIRMATION_ROUTING_QUEUE,
+
+            createQueue(connection, SALES_CONFIRMATION_QUEUE, SALES_CONFIRMATION_ROUTING_QUEUE,
                 PRODUCT_TOPIC);
+
+            console.info("Queues and Topics were defined.")
 
             setTimeout(function () {
                 connection.close();
             }, TIME);
         });
-        listenToSalesConfirmationListener();
+        setTimeout(function () {
+            listenToSalesConfirmationQueue();
+        }, TIME);
     }
 
     function createQueue(connection, queue, routingKey, topic) {
