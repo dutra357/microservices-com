@@ -4,6 +4,7 @@ import * as httpStatus from "../../../config/constants/httpStatus.js";
 import {ACCEPTED, PENDING, REJECTED} from "../status/OrderStatus.js";
 import OrderException from "../exception/OrderException.js";
 import { BAD_REQUEST } from "../../../config/constants/httpStatus.js";
+import ProductClient from "../../client/ProductClient.js";
 
 class OrderService {
     async createOrder(req) {
@@ -15,7 +16,7 @@ class OrderService {
             const { authorization } = req.headers;
 
             let order = this.createInitialOrderData(orderData, authUser);
-            await this.validateStock(order);
+            await this.validateStock(order, authorization);
 
             let createdOrder = await OrderRepository.save(order);
             this.sendMessage(createdOrder);
@@ -53,9 +54,8 @@ class OrderService {
         }
     }
 
-    async validateStock(order) {
-
-        let stockLimit = true;
+    async validateStock(order, token) {
+        let stockLimit = await ProductClient.checkProductStock(order.products, token);
         if (stockLimit) {
             throw new OrderException(BAD_REQUEST, "The stock is out of products.")
         }
