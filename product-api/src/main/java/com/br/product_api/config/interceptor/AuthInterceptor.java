@@ -26,6 +26,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
+
         if (isOptions(request) || isPublicUrl(request.getRequestURI())) {
             return true;
         }

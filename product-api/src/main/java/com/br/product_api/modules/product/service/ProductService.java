@@ -213,12 +213,12 @@ public class ProductService implements ProductInterface {
                     });
             if (!isEmpty(productsToUpDate)) {
                 repository.saveAll(productsToUpDate);
-                var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED);
+                var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED, product.transactionid());
                 salesConfirmationSender.sendSalesConfirmation(confirmationMessage);
             }
         } catch (Exception e) {
             salesConfirmationSender
-                    .sendSalesConfirmation(new SalesConfirmationDTO(product.salesId(), SalesStatus.REJECTED));
+                    .sendSalesConfirmation(new SalesConfirmationDTO(product.salesId(), SalesStatus.REJECTED, product.transactionid()));
         }
     }
 
@@ -245,6 +245,8 @@ public class ProductService implements ProductInterface {
     }
 
     public SuccessResponse verifyStock(VerifyStockQuantity request) {
+        var currentRequest = getActualRequest();
+        //log
         if (isEmpty(request) || isEmpty(request.products())) {
             throw new ValidationException("Request cannot be null.");
         }
