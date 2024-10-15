@@ -29,7 +29,7 @@ spring:
     initialize: true
     continue-on-error: true
     platform: postgresql
-    maxActive: 3
+    maxActive: 5
 
   jpa:
     hibernate:

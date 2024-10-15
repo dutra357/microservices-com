@@ -17,7 +17,7 @@ public class rabbitConfig {
     private String productTopicExchange;
 
     @Value("${app-config.rabbit.routingKey.product-stock}")
-    private String productSockKey;
+    private String productStockKey;
 
     @Value("${app-config.rabbit.routingKey.sales-confirmation}")
     private String salesConfirmationKey;
@@ -49,7 +49,7 @@ public class rabbitConfig {
         return BindingBuilder
                 .bind(productSockMq())
                 .to(topicExchange)
-                .with(productSockKey);
+                .with(productStockKey);
     }
 
     @Bean

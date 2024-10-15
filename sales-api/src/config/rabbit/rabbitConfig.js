@@ -8,26 +8,15 @@ import {
 
 import { RABBIT_MQ_URL } from "../constants/secrets.js";
 
+
 const TIME = 1000;
-const HALF_MINUTES = 30000;
-const CONTAINER_ENV = "container";
 
 export async function connectRabbitMq() {
-    const env = process.env.NODE_ENV;
-
-       if (CONTAINER_ENV === env) {
-           console.info("Waiting for RabbitMQ starts.");
-
-           setInterval(async () => {
-               await connectionCreateQueue();
-           }, HALF_MINUTES);
-       } else {
-           await connectionCreateQueue();
-       }
+    connectionCreateQueue();
 }
 
     async function connectionCreateQueue() {
-        amqp.connect(RABBIT_MQ_URL, (error, connection) => {
+        amqp.connect(RABBIT_MQ_URL, { timeout: 180000 },(error, connection) => {
             console.info("Starting RabbitMQ.");
 
             if (error) {
