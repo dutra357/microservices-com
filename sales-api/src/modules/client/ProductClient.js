@@ -3,20 +3,27 @@ import axios from "axios";
 import { PRODUCT_API_URL } from "../../config/constants/secrets.js";
 
 class ProductClient {
-    async checkProductStock(products, token) {
+    async checkProductStock(productsData, token, transactionid) {
         try {
             const headers = {
-                Authorization: `Bearer ${token}`,
+                Authorization: token,
+                transactionid,
             }
-            console.info(`Sending request to Product API. Data: ${JSON.stringify(products)}`);
-            axios.post(`${PRODUCT_API_URL}/check-stock`, { headers }, products)
+            console.info(`Sending request to Product API. Data: ${JSON.stringify(productsData)} | 
+            [transactionId: ${transactionid}]`);
+
+            let response = false;
+
+            await axios.post(`${PRODUCT_API_URL}/check-stock`, productsData.products, { headers })
                 .then(res => {
-                    return true;
+                    console.info(`Success response from Product-API. [transactionId: ${transactionid}]`)
+                    response = true;
                 }).catch(error => {
-                    console.error(`Error sending request to Product API. Error: ${error.message}`);
-                    return false;
+                    console.error(`Error sending request to Product API - [transactionId: ${transactionid}]. Error: ${error.message}`);
+                    response = false;
             })
         } catch (error) {
+            console.error(`Error sending request to Product API - [transactionId: ${transactionid}]. Error: ${error.message}`);
             return false;
         }
     }

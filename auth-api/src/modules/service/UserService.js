@@ -11,23 +11,28 @@ class UserService {
 
     async getAccessToken(request) {
         try {
+            const { transactionid, serviceid} = request.headers;
+            console.info(`Request to LOGIN order with data ${JSON.stringify(request.body)} |
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
+
             const { email, password } = request.body;
-            
             this.validateAccessTokenData(email, password);
-
             let user = await UserRepository.findByEmail(email);
-            
+
             this.validateUser(user);
-
             await this.validatePassword(password, user.password);
+            let authUser = {id: user.id, name:user.name, email:user.email}
 
-            let authUser = {id: user.id, name:user.name, email:user.email}    
-            
             const ACCESS_TOKEN = jwt.sign({ authUser }, secrets.API_SECRET, { expiresIn: '1d' });
-            return {
+            let response = {
                 status: HttpStatus.SUCCESS,
                 ACCESS_TOKEN
             }
+
+            console.info(`Request to POST order with data ${JSON.stringify(response)} |
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
+
+            return response;
 
         } catch (error) {
             return {

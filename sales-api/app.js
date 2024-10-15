@@ -9,7 +9,7 @@ import orderRoutes from "./src/modules/sales/routes/OrderRoutes.js";
 import {connectRabbitMq} from "./src/config/rabbit/rabbitConfig.js";
 
 import { sendMessageProductStockUpdateQueue } from "./src/modules/product/rabbitMq/productStockUpdateSender.js";
-import e from "express";
+import tracing from "./src/config/tracing.js";
 
 
 const app = express();
@@ -20,6 +20,8 @@ connectMongoDb();
 startInitialData();
 connectRabbitMq();
 
+app.use(tracing)
+app.use(express.json())
 app.use(checkToken);
 app.use(orderRoutes);
 

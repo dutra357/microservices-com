@@ -1,5 +1,5 @@
 import Order from "../../modules/sales/model/Order.js";
-
+import { v4 as uuidv4 } from "uuid";
 
 export async function startInitialData(params) {
     try {
@@ -33,8 +33,8 @@ export async function startInitialData(params) {
             status: "APPROVED",
             createdAt: new Date(),
             updatedAt: new Date(),
-            transactionId: "1",
-            serviceId: "1"
+            transactionId: uuidv4(),
+            serviceId: uuidv4()
         });
 
         await Order.create({
@@ -60,8 +60,8 @@ export async function startInitialData(params) {
             status: "REJECTED",
             createdAt: new Date(),
             updatedAt: new Date(),
-            transactionId: "2",
-            serviceId: "2"
+            transactionId: uuidv4(),
+            serviceId: uuidv4()
         });
 
         let mockData = await Order.find();
