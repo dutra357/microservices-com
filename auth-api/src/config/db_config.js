@@ -1,9 +1,9 @@
 import Sequelize from "sequelize";
+import {DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER} from './constants/Secret.js'
 
-import { underscoredIf } from "sequelize/lib/utils";
-
-const sequelize = new Sequelize("auth-db", "admin", "123456", {
-    host: "localhost",
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+    host:DB_HOST,
+    port: DB_PORT,
     dialect: "postgres",
     quoteIdentifiers: false,
     define: {
@@ -17,7 +17,7 @@ const sequelize = new Sequelize("auth-db", "admin", "123456", {
 
 sequelize
     .authenticate()
-    .then(() => {console.info("Connection has been stablished.")
+    .then(() => {console.info("Connection has been established.")
 
 }).catch(err => {
     console.error("Unable to connect to the database.");

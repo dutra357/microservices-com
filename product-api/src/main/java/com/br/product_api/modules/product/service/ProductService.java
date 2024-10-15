@@ -183,7 +183,7 @@ public class ProductService implements ProductInterface {
             var actualRequest = getActualRequest();
             var actualToken = actualRequest.getHeader(AUTHORIZATION);
             var transactionId = actualRequest.getHeader(TRANSACTION_ID);
-            //var serviceId = actualRequest.getAttribute(SERVICE_ID);
+            var serviceId = actualRequest.getAttribute(SERVICE_ID);
 
             var response = salesClient
                     .findSalesByProductId(productId, actualToken, transactionId)
@@ -245,8 +245,11 @@ public class ProductService implements ProductInterface {
     }
 
     public SuccessResponse verifyStock(VerifyStockQuantity request) {
-        var currentRequest = getActualRequest();
-        //log
+        //var currentRequest = getActualRequest();
+        //var transactionId = currentRequest.getHeader(TRANSACTION_ID);
+        //var serviceId = currentRequest.getAttribute(SERVICE_ID);
+        //log.info("Request to POST Product stock with data {} | [TransactionId: {}] | [serviceId: {}].");
+
         if (isEmpty(request) || isEmpty(request.products())) {
             throw new ValidationException("Request cannot be null.");
         }
