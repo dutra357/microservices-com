@@ -17,6 +17,7 @@ public class HttpConfig {
     @Bean
     public SalesClient salesClient() {
         return HttpServiceProxyFactory.builderFor(
+                //From WebFlux
                 WebClientAdapter.create(
                                 WebClient
                                         .builder()

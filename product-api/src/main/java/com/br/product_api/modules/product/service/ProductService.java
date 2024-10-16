@@ -28,7 +28,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Service
 public class ProductService implements ProductInterface {
 
-    private static final Integer ZERO = 0;
     private static final String AUTHORIZATION = "Authorization";
     private static final String TRANSACTION_ID = "transactionId";
     private static final String SERVICE_ID = "serviceId";
@@ -183,6 +182,7 @@ public class ProductService implements ProductInterface {
             var actualRequest = getActualRequest();
             var actualToken = actualRequest.getHeader(AUTHORIZATION);
             var transactionId = actualRequest.getHeader(TRANSACTION_ID);
+            //for logs
             var serviceId = actualRequest.getAttribute(SERVICE_ID);
 
             var response = salesClient
