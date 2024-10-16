@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 public class SalesConfirmationSender {
 
     private final RabbitTemplate rabbitTemplate;
-
     public SalesConfirmationSender(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
