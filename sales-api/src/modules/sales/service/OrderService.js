@@ -6,33 +6,38 @@ import OrderException from "../exception/OrderException.js";
 import {BAD_REQUEST, INTERNAL_SERVER_ERROR, SUCCESS} from "../../../config/constants/httpStatus.js";
 import ProductClient from "../../client/ProductClient.js";
 
+
+
 class OrderService {
     async createOrder(req) {
+
         try {
             let orderData = req.body;
 
-            const { transactionid, sarviceid } = req.headers;
+            const { transactionid, serviceid } = req.headers;
             console.info(`Request to POST new order with data ${JSON.stringify(orderData)} |
-             [transactionId: ${transactionid}] |
-              serviceId: ${sarviceid}`);
+             [transactionid: ${transactionid}] |
+              serviceId: ${serviceid}`);
 
             this.validateOrderData(orderData);
             const {authUser} = req;
             const { authorization } = req.headers;
 
-            let order = this.createInitialOrderData(orderData, authUser, transactionid, sarviceid);
+            let order = this.createInitialOrderData(orderData, authUser, transactionid, serviceid);
+
             await this.validateStock(order, authorization, transactionid);
 
             let createdOrder = await OrderRepository.save(order);
             this.sendMessage(createdOrder, transactionid);
+
             let response = {
                 status: httpStatus.SUCCESS,
                 order,
             }
 
             console.info(`Request to POST new order with data ${JSON.stringify(response)} |
-             [transactionId: ${transactionid}] |
-              serviceId: ${sarviceid}`);
+             [transactionid: ${transactionid}] |
+              serviceId: ${serviceid}`);
 
             return response;
         } catch (error) {
@@ -56,7 +61,7 @@ class OrderService {
                     await OrderRepository.save(existingOrder);
                 }
             } else {
-                console.warn(`The order message was not complete [transactionId: ${message.transactionId}].`)
+                console.warn(`The order message was not complete [transactionId: ${message.transactionid}].`)
             }
         } catch (error) {
             console.error("Could not parse order message from queue.")
@@ -77,37 +82,37 @@ class OrderService {
         }
     }
 
-    createInitialOrderData(orderData, authUser, transactionid, sarviceid) {
+    createInitialOrderData(orderData, authUser, transactionid, serviceid) {
         return {
             status: PENDING,
             user: authUser,
             createdAt: new Date(),
             updatedAt: new Date(),
             transactionid,
-            sarviceid,
+            serviceid,
             products: orderData.products,
         };
     }
 
     sendMessage(createdOrder, transactionid) {
         const message = {
-            salesId: createdOrder.id,
+            salesid: createdOrder.id,
             products: createdOrder.products,
             transactionid,
         }
-        sendMessageProductStockUpdateQueue(createdOrder.products);
+        sendMessageProductStockUpdateQueue(message);
     }
 
     async findById(req) {
         try {
-            const { id } = req.params;
+            const { orderId } = req.params;
 
-            const { transactionid, sarviceid } = req.headers;
+            const { transactionid, serviceid } = req.headers;
             console.info(`Request to GET order by ID[${id}] |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
-            this.validateId(id);
-            const existingOrder = await OrderRepository.findById(id);
+            this.validateId(orderId);
+            const existingOrder = await OrderRepository.findById(orderId);
             if (!existingOrder) {
                 throw new OrderException(BAD_REQUEST, "The order was not found.")
             }
@@ -116,8 +121,8 @@ class OrderService {
                 existingOrder,
             }
 
-            console.info(`Response to GET order by ID[${id}]: ${JSON.stringify(response)} |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+            console.info(`Response to GET order by ID[${orderId}]: ${JSON.stringify(response)} |
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
             return  response;
         } catch (error) {
@@ -132,9 +137,10 @@ class OrderService {
         try {
             const orders = await OrderRepository.findAll();
 
-            const { transactionid, sarviceid } = req.headers;
+            const { transactionid, serviceid } = req.headers;
+
             console.info(`Request to GET all |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
             if (!orders) {
                 throw new OrderException(BAD_REQUEST, "No orders were found.")
@@ -146,7 +152,7 @@ class OrderService {
             }
 
             console.info(`Response to GET orders: ${JSON.stringify(response)} |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
             return  response;
         } catch (error) {
@@ -162,9 +168,9 @@ class OrderService {
             const { productId } = req.params;
             this.validateId(productId);
 
-            const { transactionid, sarviceid } = req.headers;
+            const { transactionid, serviceid } = req.headers;
             console.info(`Request to GET order by Product ID[${productId}] |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
             const orders = await OrderRepository.findByProductId(productId);
             if (!orders) {
@@ -177,7 +183,7 @@ class OrderService {
             }
 
             console.info(`Response to GET order by Product ID[${productId}] |
-             [transactionId: ${transactionid}] | serviceId: ${sarviceid}`);
+             [transactionId: ${transactionid}] | serviceId: ${serviceid}`);
 
             return  response;
         } catch (error) {

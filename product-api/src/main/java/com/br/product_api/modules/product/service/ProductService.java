@@ -16,6 +16,8 @@ import com.br.product_api.modules.sales.rabbitMq.SalesConfirmationSender;
 import com.br.product_api.modules.supplier.dto.SupplierResponse;
 import com.br.product_api.modules.supplier.service.SupplierService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,7 @@ public class ProductService implements ProductInterface {
     private static final String AUTHORIZATION = "Authorization";
     private static final String TRANSACTION_ID = "transactionId";
     private static final String SERVICE_ID = "serviceId";
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     private final ProductRepository repository;
     private final SupplierService supplierService;
@@ -174,7 +177,7 @@ public class ProductService implements ProductInterface {
         return new ProductSalesResponse(product.getId(), product.getName(), product.getQuantity(), product.getCreateAt(),
                 new SupplierResponse(product.getSupplier().getId(), product.getSupplier().getName()),
                 new CategoryResponse(product.getCategory().getId(), product.getCategory().getDescription()),
-                salesList.salesIds());
+                salesList.salesids());
     }
 
     private SalesProductResponse getSalesByProductId(Integer productId) {
@@ -182,8 +185,9 @@ public class ProductService implements ProductInterface {
             var actualRequest = getActualRequest();
             var actualToken = actualRequest.getHeader(AUTHORIZATION);
             var transactionId = actualRequest.getHeader(TRANSACTION_ID);
-            //for logs
+
             var serviceId = actualRequest.getAttribute(SERVICE_ID);
+            log.error("Receive response from orders by productId {} || [serviceId: {}].", productId, serviceId);
 
             var response = salesClient
                     .findSalesByProductId(productId, actualToken, transactionId)
@@ -191,6 +195,7 @@ public class ProductService implements ProductInterface {
 
             return response;
         } catch (Exception exception) {
+            log.error("Error when try to call Sales-API. Msg {}", exception.getMessage());
             throw new ValidationException("Sales cannot be found.");
         }
     }
@@ -213,22 +218,23 @@ public class ProductService implements ProductInterface {
                     });
             if (!isEmpty(productsToUpDate)) {
                 repository.saveAll(productsToUpDate);
-                var confirmationMessage = new SalesConfirmationDTO(product.salesId(), SalesStatus.APPROVED, product.transactionid());
+                var confirmationMessage = new SalesConfirmationDTO(product.salesid(), SalesStatus.APPROVED, product.transactionid());
                 salesConfirmationSender.sendSalesConfirmation(confirmationMessage);
             }
         } catch (Exception e) {
             salesConfirmationSender
-                    .sendSalesConfirmation(new SalesConfirmationDTO(product.salesId(), SalesStatus.REJECTED, product.transactionid()));
+                    .sendSalesConfirmation(new SalesConfirmationDTO(product.salesid(), SalesStatus.REJECTED, product.transactionid()));
         }
     }
 
     private Product privateFindById(Integer id) {
-        Product product = repository.findById(id).get();
+        Product product = repository.findById(id).orElseThrow(() ->
+                new ValidationException("Product not found."));
         return product;
     }
 
     private void validateStockStream(StockDTO product) {
-        if (isEmpty(product) || isEmpty(product.salesId())) {
+        if (isEmpty(product) || isEmpty(product.salesid())) {
             throw new ValidationException("The product data an sales ID cannot be null.");
         }
 
@@ -245,11 +251,6 @@ public class ProductService implements ProductInterface {
     }
 
     public SuccessResponse verifyStock(VerifyStockQuantity request) {
-        //var currentRequest = getActualRequest();
-        //var transactionId = currentRequest.getHeader(TRANSACTION_ID);
-        //var serviceId = currentRequest.getAttribute(SERVICE_ID);
-        //log.info("Request to POST Product stock with data {} | [TransactionId: {}] | [serviceId: {}].");
-
         if (isEmpty(request) || isEmpty(request.products())) {
             throw new ValidationException("Request cannot be null.");
         }

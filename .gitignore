@@ -12,3 +12,5 @@ node-java.cbp
 .vscode
 CMakeLists.txt
 cmake-build-debug/
+*.zip
+

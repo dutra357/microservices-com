@@ -4,12 +4,13 @@ import com.br.product_api.modules.category.model.Category;
 import com.br.product_api.modules.supplier.model.Supplier;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
 @Table(name = "product", schema = "public")
-public class Product {
+public class Product implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

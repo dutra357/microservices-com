@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { PRODUCT_API_URL } from "../../config/constants/secrets.js";
+import {response} from "express";
 
 class ProductClient {
     async checkProductStock(productsData, token, transactionid) {
@@ -14,7 +15,7 @@ class ProductClient {
 
             let response = false;
 
-            await axios.post(`${PRODUCT_API_URL}/check-stock`, productsData.products, { headers })
+            await axios.post(`${PRODUCT_API_URL}/check-stock`, { products: productsData.products }, { headers })
                 .then(res => {
                     console.info(`Success response from Product-API. [transactionId: ${transactionid}]`)
                     response = true;
@@ -26,6 +27,8 @@ class ProductClient {
             console.error(`Error sending request to Product API - [transactionId: ${transactionid}]. Error: ${error.message}`);
             return false;
         }
+
+        return response;
     }
 }
 

@@ -14,7 +14,8 @@ export function sendMessageProductStockUpdateQueue(message) {
             }
 
             let jsonStringMessage = JSON.stringify(message);
-            console.info(`Sending message to product update stock: ${jsonStringMessage}`)
+            console.info(`Sending message to product update stock: ${jsonStringMessage}`);
+
             channel.publish(PRODUCT_TOPIC,
                 PRODUCT_STOCK_UPDATE_ROUTING_KEY,
                 Buffer.from(jsonStringMessage));

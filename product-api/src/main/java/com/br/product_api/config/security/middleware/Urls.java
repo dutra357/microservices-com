@@ -1,4 +1,4 @@
-package com.br.product_api.config.interceptor;
+package com.br.product_api.config.security.middleware;
 
 import java.util.List;
 

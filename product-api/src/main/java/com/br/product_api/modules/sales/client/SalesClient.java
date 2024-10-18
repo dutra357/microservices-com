@@ -13,7 +13,7 @@ public interface SalesClient {
 
     @GetExchange("/product/{productId}")
     Optional<SalesProductResponse> findSalesByProductId(@PathVariable Integer productId,
-                                                        @RequestHeader(name = "Authorization") String authorization,
-                                                        @RequestHeader(name = "transactionId") String transactionId);
+                                                        @RequestHeader(name = "authorization") String authorization,
+                                                        @RequestHeader(name = "transactionid") String transactionid);
 
 }

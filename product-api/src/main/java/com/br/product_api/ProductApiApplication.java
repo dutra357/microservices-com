@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableRabbit
 @SpringBootApplication
+@EnableTransactionManagement
 public class ProductApiApplication {
 
 	public static void main(String[] args) {

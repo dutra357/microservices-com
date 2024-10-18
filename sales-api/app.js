@@ -15,7 +15,6 @@ const PORT = env.PORT || 8082
 const CONTAINER_ENV = "container";
 const TIME = 1800;
 
-startInitialData();
 console.info("Starting RabbitMQ and MongoDB..");
 connectMongoDb();
 connectRabbitMq();
@@ -28,10 +27,6 @@ app.get("/api/initial-data", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-    return res.status(200).json(getOkResponse());
-});
-
-app.get('/api/status', (req, res) => {
     return res.status(200).json(getOkResponse());
 });
 
